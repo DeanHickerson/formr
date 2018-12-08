@@ -1,0 +1,88 @@
+[
+    {
+        "formTitle": "Sample Form Title"
+    },
+    {
+        "type": "text",
+        "label": "Text Label:",
+        "id": "text1",
+        "placeholder": "Enter text here:",
+        "required": true,
+        "disabled": false,
+        "onchange": "formr.liveLoad(this);"
+    },
+    {
+        "type": "number",
+        "label": "Text Label:",
+        "id": "text2",
+        "placeholder": "Enter number here:",
+        "required": true,
+        "disabled": false,
+        "min": "2",
+        "max": "6"
+    },
+    {
+        "type": "date",
+        "label": "Pick Date:",
+        "id": "text3",
+        "class": "col-3",
+        "required": true,
+        "disabled": false
+    },
+	{
+		"type": "html",
+        "id": "html1",
+		"config": {
+            "type": "div",
+            "class": "my-3",
+            "html": "<p>This is <b>inner</b> HTML!</p>",
+            "style": "color:#fb56f4"
+        }
+	},
+    {
+        "type": "textarea",
+        "label": "Text Area Label:",
+        "id": "textarea1",
+        "placeholder": "Enter text here:",
+        "rows": "4",
+        "required": true
+    },
+    {
+        "type": "dropdown",
+        "label": "Select an Option:",
+        "id": "dropdown1",
+        "required": true,
+        "options": {
+            "Label for Item 1":"Value for Item 1",
+            "Label for Item 2":"Value for Item 2",
+            "Label for Item 3":"Value for Item 3"
+        }
+    },
+    {
+        "type": "checkboxGroup",
+        "label": "Please select any options below:",
+        "id": "checkGroup1",
+        "value": [
+            "Value for Item 2"
+        ],
+        "options": {
+            "Label for Item 1":"Value for Item 1",
+            "Label for Item 2":"Value for Item 2"
+        }
+    },
+    {
+        "type": "radioGroup",
+        "label": "Please select an option below:",
+        "id": "radioGroup1",
+        "required": true,
+        "options": {
+            "Label for Item 1":"Value for Item 1",
+            "Label for Item 2":"Value for Item 2"
+        }
+    },
+    {
+        "type": "button",
+        "label": "Submit",
+        "id": "submitButton"
+    }
+]
