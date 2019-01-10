@@ -3,13 +3,16 @@
         "formTitle": "Sample Form Title"
     },
     {
+        "description": "This is the form's description. We can explain what submitting this form will do."
+    },
+    {
         "type": "text",
         "label": "Text Label:",
         "id": "text1",
         "placeholder": "Enter text here:",
-        "required": true,
+        "required": false,
         "disabled": false,
-        "onchange": "formr.liveLoad(this);"
+        "class": "liveload"
     },
     {
         "type": "number",
@@ -22,10 +25,18 @@
         "max": "6"
     },
     {
+        "type": "file",
+        "label": "Upload",
+        "id": "fileUpload",
+        "accept": ".txt",
+        "required": false,
+        "disabled": false
+    },
+    {
         "type": "date",
         "label": "Pick Date:",
         "id": "text3",
-        "class": "col-3",
+        "class": "col-md-3",
         "required": true,
         "disabled": false
     },
@@ -52,10 +63,11 @@
         "label": "Select an Option:",
         "id": "dropdown1",
         "required": true,
+        "placeholder": "- Select One -",
         "options": {
-            "Label for Item 1":"Value for Item 1",
-            "Label for Item 2":"Value for Item 2",
-            "Label for Item 3":"Value for Item 3"
+            "Label for Item 1": "Value for Item 1",
+            "Label for Item 2": "Value for Item 2",
+            "Label for Item 3": "Value for Item 3"
         }
     },
     {
@@ -66,8 +78,10 @@
             "Value for Item 2"
         ],
         "options": {
-            "Label for Item 1":"Value for Item 1",
-            "Label for Item 2":"Value for Item 2"
+            "Label for Item 1": "Value for Item 1",
+            "Label for Item 2": "Value for Item 2",
+            "Label for Item 3": "Value for Item 3",
+            "Label for Item 4": "Value for Item 4","Label for Item 5": "Value for Item 5"
         }
     },
     {
@@ -76,8 +90,10 @@
         "id": "radioGroup1",
         "required": true,
         "options": {
-            "Label for Item 1":"Value for Item 1",
-            "Label for Item 2":"Value for Item 2"
+            "Label for Item 1": "Value for Item 1",
+            "Label for Item 2": "Value for Item 2",
+            "Label for Item 3": "Value for Item 3",
+            "Label for Item 4": "Value for Item 4","Label for Item 5": "Value for Item 5"
         }
     },
     {
