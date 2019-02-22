@@ -74,6 +74,7 @@
         "type": "checkboxGroup",
         "label": "Please select any options below:",
         "id": "checkGroup1",
+        "required": true,
         "value": [
             "Value for Item 2"
         ],

@@ -144,7 +144,7 @@ var formr = (function() {
             debug.log('Submit deferred');
         }
         else {
-            debug.log('Submitting form');
+            debug.log('Attempting to submit form...');
             submitEvent();
         }
     },true);
@@ -174,7 +174,7 @@ var formr = (function() {
             } else {
                 formControl = 'form-control';
             }
-            if(!v.class){
+            if(!v.class) {
                 if(v.type != 'button' && !v.formTitle && !v.description && v.type != 'checkboxGroup' && v.type != 'radioGroup') {
                     v.class = formControl;
                 }
@@ -187,10 +187,10 @@ var formr = (function() {
             if(v.group) {
                 v.group = v.group.replace(' ','_') // Replace spaces in the group name with underscores
                 fieldSets.push(v.group); // Push the group name into the fieldSets array
-                v.group += ' form-group'
+                v.group += ' form-group';
                 
             } else {
-                v.group = 'form-group'
+                v.group = 'form-group';
             }
             // Create a reusable form group element to stick inputs into
             var $formGroup = $('<div>',{class: v.group}),
@@ -275,10 +275,17 @@ var formr = (function() {
             } else if(v.type == 'checkboxGroup') {
                 // Build checkboxes
                 $('<label>' + v.label + '</label>').appendTo($formGroup);
-                if(v.required == true){
+                if(v.required == true) {
                     groupRequired = true;
+                    $formGroup.prop('dataset')['required'];
+                    $formGroup.prop('dataset')['required'] = true;
+                    $formGroup.prop('dataset')['id'];
+                    $formGroup.prop('dataset')['id'] = v.id;
                 }
                 $.each(v.options, function(ind,opt) {
+                    if(!v.class) {
+                        v.class = '';
+                    }
                     var $formCheck = $('<div>',{
                         class: 'form-check ' + v.class
                     });
@@ -417,29 +424,24 @@ var formr = (function() {
                 $formGroup[0].id = 'parent-' + v.id;
                 $form.append($formGroup);
             } else if(v.type == 'button') {
+				var $button;
                 // Build buttons
-                var buttonClass;
                 if(v.class) {
-                    buttonClass = 'btn ' + v.class;
+                    v.class = 'btn ' + v.class;
                 } else {
-                    buttonClass = 'btn btn-outline-primary';
+                    v.class = 'btn btn-outline-primary';
                 }
-                var $button;
-                if(v.id === 'submitButton') {
-                    $button = $('<input>', {
-                        type: 'submit',
-                        id: v.id,
-                        class: buttonClass,
-                        value: v.label
-                    });
-                } else {
-                    $button = $('<button>', {
-                        type: v.type,
-                        id: v.id,
-                        class: buttonClass,
-                        text: v.label
-                    });
+                if(v.id === 'submitButton') {	
+                    $button = $('<input>', {	
+                        type: 'submit',	
+                        id: v.id,	
+                        class: v.class,	
+                        value: v.value
+                    });	
                 }
+				else {
+					$button = $('<button>',v);
+				}
                 $button.addClass('formfield');
                 $formGroup.addClass('d-flex');
                 $formGroup.append($button);
@@ -497,7 +499,7 @@ var formr = (function() {
                 $form.append($formGroup);
                 // If we have a file upload input, init our reader function/listener
                 if(v.type == 'file') {
-                    fileUpload();
+                    //fileUpload();
                 }
             }
         });
@@ -586,9 +588,41 @@ var formr = (function() {
         // also set our validity state and run the vanilla HTML5 validation
         var form = $('#formr');
         var valid = false;
-        if(document.querySelector('#formr').checkValidity()) {
-            valid = true;
+        var invalids = [];
+        form.find('[data-id]').each(function(i,v) {
+            if(!(v.classList.contains('form-group')) && !v.validity.valid) {
+                invalids.push(v.dataset.id);
+            }
+        });
+        var requiredCheckboxes = form.find('[data-required]');
+        if(requiredCheckboxes.length != 0) {
+            if(requiredCheckboxes.length > 1) {
+                let checkboxes = [];
+                requiredCheckboxes.each(function(ind,group) {
+                    $(group).find('input[type="checkbox"]').each(function(i,v) {
+                        checkboxes.push(v);
+                    });
+                    if(!(checkboxes.some(function(x) { return x.checked}))) {
+                        invalids.push($(group).prop('dataset')['id']);
+                    }
+                });
+            } else {
+                let checkboxes = [];
+                var group = form.find('[data-required]');
+                $(group).find('input[type="checkbox"]').each(function(i,v) {
+                    checkboxes.push(v);
+                });
+                if(!(checkboxes.some(function(x) { return x.checked}))) {
+                    invalids.push($(group).prop('dataset')['id']);
+                }
+            }
         }
+
+        if(invalids.length == 0) {
+            valid = true;
+            debug.log('No invalid fields found.');
+        }
+
         // Begin creating our object that we will send to our backend (targetURL)
         var formData = gather(form);
         // If HTML5 validation passes we wrap up the formData object in an array
@@ -620,16 +654,9 @@ var formr = (function() {
                 formr.callback();
             }
         } else {
-            // If HTML5 form validation does not pass
-            // we need to find those fields which failed to pass
-            // and store them in an array
-            var invalids = [];
-            form.find('[data-id]').each(function(i,v) {
-                if(!v.validity.valid) {
-                    invalids.push(v.dataset.id);
-                }
-            });
-            
+            // If HTML5 form validation does not pass...
+            debug.log('Submit prevented. Found the following invalids:');
+            debug.log(invalids);
             // Set focus to the input that failed validation.
             if(invalids[0].slice(0,1) === '$'){
                 $('#\\' + invalids[0]).focus();
@@ -637,7 +664,6 @@ var formr = (function() {
                 $('#' + invalids[0]).focus();
             }
             
-
             // We use a jQuery unique sort to clean up duplicates from checkboxes and radio groups
             invalids = $.uniqueSort(invalids);
             var formGroups = [];
