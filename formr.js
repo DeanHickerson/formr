@@ -1,10 +1,5 @@
-// NFCU
-// Developers:
-// Dean Hickerson
-// Bruce Khalatbari
-var formr = (function() {
-    $.ajaxSetup({cache:false});
-    var init = (function(configs) {
+var formr = (() => {
+    var init = (configs => {
         this.resourceURL = configs.resourceURL;
         this.targetURL = configs.targetURL;
         this.liveloadURL = configs.liveloadURL;
@@ -13,29 +8,31 @@ var formr = (function() {
         this.buildCallback = configs.buildCallback;
         this.debug = configs.debug;
         var self = this;
-        $.get(configs.resourceURL).done(function(data) {
+        fetch(configs.resourceURL).then(json => {
+            return json.json();
+        }).then(data => {
             buildForm(data);
             self.data = data;
         });
     });
 
     var debug = {
-        log: function(msg) {
+        log: (msg) => {
             if(formr.debug) {
                 console.log(msg);
             }
         },
-        warn: function(msg) {
+        warn: (msg) => {
             if(formr.debug) {
                 console.warn(msg);
             }
         },
-        error: function(msg) {
+        error: (msg) => {
             if(formr.debug) {
                 console.error(msg);
             }
         },
-        dir: function(el) {
+        dir: (el) => {
             if(formr.debug) {
                 console.dir(el);
             }
@@ -45,7 +42,7 @@ var formr = (function() {
     // Ensure 'noValidate' is on the form to prevent unwanted focus events from firing
     document.forms['formr'].noValidate = true;
 
-    // Helper function to get the index numer of an element from a class selector
+    // Helper function to get the index number of an element from a class selector
     function indexInClass(collection, node) {
         for (var i = 0; i < collection.length; i++) {
         if (collection[i] === node)
