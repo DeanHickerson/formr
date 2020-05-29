@@ -135,7 +135,7 @@ var formr = (() => {
     },true);
 
     // Defer form submit if a liveload is pending. Otherwise execute submitEvent();
-    document.forms['formr'].addEventListener('submit',function(e) {
+    document.forms['formr'].addEventListener('submit',e => {
         e.preventDefault();
         if(formr.deferSubmit === true) {
             debug.log('Submit deferred');
@@ -149,7 +149,7 @@ var formr = (() => {
     // We build the form in the initialzation of formr
     // and also again each time liveload is triggered
     function buildForm(json,changed) {
-        var $form = $('#formr');
+        var $form = document.querySelector('#formr');
         var fieldSets = [];
         if(json[0] == undefined) {
             json = [json];
@@ -158,12 +158,12 @@ var formr = (() => {
         // If this is a liveLoad we need to clear the form
         // and later find the onchange element and replace
         // it with original data that triggered liveLoad
-        $form.children().each(function() {
-            $(this).remove();
+        Array.from($form.children).forEach((child) => {
+            child.remove();
         })
 
         // Next we loop through all JSON objects and build DOM elements
-        $.each(json, function(i,v) {
+        json.forEach((v,i) => {
             // Set some inputs with the default form-control class
             var formControl;
             if(v.type && v.type === 'file') {
@@ -190,141 +190,146 @@ var formr = (() => {
                 v.group = 'form-group';
             }
             // Create a reusable form group element to stick inputs into
-            var $formGroup = $('<div>',{class: v.group}),
-                requiredMsg = $('<small>',{
-                    class:'text-muted',
-                    text: 'Required'
-                });
+            var $formGroup = document.createElement('div'),
+                requiredMsg = document.createElement('small');
+            $formGroup.classList.add(v.group);
+            requiredMsg.classList.add('text-muted');
+            requiredMsg.innerText = 'Required';
             // Build form title
             if(v.formTitle) {
                 // Create a bootstrap navbar
-                var $navBar = $('<nav>',{
-                    class: 'navbar',
-                });
+                var $navBar = document.createElement('nav');
+                $navBar.classList.add('navbar');
                 // Create a clickable span element and add the title text to it (click reloads the page)
-                var $formTitle = $('<span>',{
-                    text: v.formTitle,
-                    class: 'navbar-brand  m-auto ' + v.class,
-                    style: 'cursor:pointer;' + v.style,
-                    onclick: 'window.location.href="."',
-                    id:'formTitle'
-                });
+                var $formTitle = document.createElement('span');
+                $formTitle.innerText = v.formTitle;
+                $formTitle.classList.add(v.class,'navbar-brand','m-auto');
+                $formTitle.style.cursor = 'pointer';
+                $formTitle.setAttribute('style',v.style);
+                $formTitle.onClick = 'window.location.href="."';
+                $formTitle.id = 'formTitle';
                 // Add the span to the nav element
-                $formTitle.appendTo($navBar);
+                $navBar.append($formTitle);
                 // Add the nav element to the form
-                $form.prepend($navBar);
+                $form.children[0].insertBefore($navBar);
                 // Set the document title
                 document.title = v.formTitle;
             } else if(v.description) {
                 // Build the Description
-                $description = $('<p>', v);
-                $description.text(v.description);
-                $description.removeClass('form-control');
-                if($form.find('nav')) {
-                    $form.find('nav').after($description);
+                var $description = document.createElement('p');
+                $description.innerText = v.description;
+                if($description.classList.contains('form-control')) {
+                    $description.classList.remove('form-control');
+                }
+                if($form.querySelector('nav')) {
+                    $form.querySelector('nav').insertAdjacentElement('afterend',$description);
                 } else {
-                    $form.prepend($description);
+                    $form.insertAdjacentElement('afterbegin',$description);
                 }
             } else if (v.theme) {
                 // Set the body className
                 document.body.className = v.theme;
             } else if(v.type == 'dropdown') { 
                 // Build dropdowns
-                $('<label>' + v.label + '</label>').appendTo($formGroup);
+                let label = document.createElement('label');
+                label.innerText = v.label;
+                $formGroup.insertAdjacentElement('beforeend',label);
                 var bools = [];
-                $.each(v, function(prop, val) {
-                    if(typeof val == 'boolean') {
-                        if(val) {
+                for(prop in v) {
+                    if(typeof v[prop] == 'boolean') {
+                        if(v[prop]) {
                             bools.push(prop);
                         }
                         delete v[prop];
                     }
-                });
-                var $select = $('<select>', v);
-                $select.addClass('formfield');
-                $select[0].dataset.id = v.id;
-                $select[0].dataset.type = v.type;
-                $.each(bools, function(ind, prop) {
-                    $select.prop(prop,true);
+                }
+                var  $select = document.createElement('select');
+                $select.classList.add('formfield');
+                $select.dataset.id = v.id;
+                $select.dataset.type = v.type;
+                bools.forEach(item => {
+                    $select[item] = true;
                 });
                 if(v.placeholder) {
-                    $('<option style="color:#777;" value="" selected>' + v.placeholder + '</option>').appendTo($select);
+                    var option = document.createElement('option');
+                    option.style.color = '#777';
+                    option.value = '';
+                    option.selected = true;
+                    option.innerText = v.placeholder;
+                    $select.append(option);
                 } else {
-                    $('<option></option>').appendTo($select);
+                    $select.innerHTML = '<option></option>';
                 }
-                $.each(v.options, function(ind,opt) {
-                    var $option = $('<option>',{
-                        'data-value': opt,
-                        text: ind,
-                        value: opt
-                    });
+                for(prop in v.options) {
+                    var $option = document.createElement('option');
+                    $option.dataset.value = v.options[prop];
+                    $option.innerText = prop;
+                    $option.value = v.options[prop];
                     $select.append($option);
-                });
+                }
                 if(v.value) {
-                    $select.val(v.value);
+                    $select.value = v.value;
                 }
                 $formGroup.append($select);
-                $formGroup[0].id = 'parent-' + v.id;
-                if($select.prop('required')) {
+                $formGroup.id = 'parent-' + v.id;
+                if($select.required) {
                     $formGroup.append(requiredMsg);
                 }
                 $form.append($formGroup);
             } else if(v.type == 'checkboxGroup') {
                 // Build checkboxes
-                $('<label>' + v.label + '</label>').appendTo($formGroup);
+                var label = document.createElement('label');
+                label.innerText = v.label;
+                $formGroup.append(label);
                 if(v.required == true) {
-                    groupRequired = true;
-                    $formGroup.prop('dataset')['required'];
-                    $formGroup.prop('dataset')['required'] = true;
-                    $formGroup.prop('dataset')['id'];
-                    $formGroup.prop('dataset')['id'] = v.id;
+                    var groupRequired = true;
+                    $formGroup.dataset.required = true;
+                    $formGroup.dataset.id = v.id;
                 }
-                $.each(v.options, function(ind,opt) {
+                let ind = 0;
+                for(prop in v.options) {
                     if(!v.class) {
                         v.class = '';
                     }
-                    var $formCheck = $('<div>',{
-                        class: 'form-check ' + v.class
-                    });
+                    var $formCheck = document.createElement('div');
+                    $formCheck.classList.add('form-check',v.class);
                     var id = v.id + '-' + ind;
-                    var $option = $('<input>',{
-                        class: 'form-check-input formfield ' + v.class,
-                        type: 'checkbox',
-                        id: id,
-                    });
+                    var $option = document.createElement('input');
+                    $option.classList.add('fpr,-check-input','formfield',v.class);
+                    $option.type = 'checkbox';
+                    $option.id = id;
                     if(v.value) {
                         //if v.value is an object, check multiple boxes
                         if(typeof v.value === 'object') {
-                            $.each(v.value, function(index,value) {
-                                if(value == opt) {
-                                    $option.prop('checked',true);
+                            for(subProp in v.value) {
+                                if(v.value[subProp] == v.options[prop]) {
+                                    $option.checked = true;
                                 }
-                            });
+                            }
                         }
-                        //otherse assume its a string (single value)
+                        //otherwise assume its a string (single value)
                         else {
-                            if(v.value == opt) {
-                                $option.prop('checked',true);
+                            if(v.value == v.options[prop]) {
+                                $option.checked = true;
                             }
                         }
                     }
-                    $option[0].dataset.id = v.id;
-                    $option[0].dataset.type = 'checkbox';
-                    $option[0].dataset.value = opt;
+                    $option.dataset.id = v.id;
+                    $option.dataset.type = 'checkbox';
+                    $option.dataset.value = v.options[prop];
                     $formCheck.append($option);
-                    var $label = $('<label>',{
-                        class: 'form-check-label',
-                        for: id,
-                        text: ind
-                    });
+                    var $label = document.createElement('label');
+                    $label.classList.add('form-check-label');
+                    $label.setAttribute('for',id);
+                    $label.innerText = ind;
                     $formCheck.append($label);
                     $formGroup.append($formCheck);
-                });
+                };
                 if(groupRequired == true){
                     groupRequired == false;
                     $formGroup.append(requiredMsg);
                 }
-                $formGroup[0].id = 'parent-' + v.id;
+                $formGroup.id = 'parent-' + v.id;
                 $form.append($formGroup);
             } else if(v.type == 'radioGroup') {
                 // Build radio buttons
