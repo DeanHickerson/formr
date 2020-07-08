@@ -323,7 +323,8 @@ var formr = (() => {
                     $label.setAttribute('for',id);
                     $label.innerText = ind;
                     $formCheck.append($label);
-                    $formGroup.append($formCheck);
+					$formGroup.append($formCheck);
+					ind++
                 };
                 if(groupRequired == true){
                     groupRequired == false;
@@ -333,68 +334,69 @@ var formr = (() => {
                 $form.append($formGroup);
             } else if(v.type == 'radioGroup') {
                 // Build radio buttons
-                $('<label>' + v.label + '</label>').appendTo($formGroup);
+				let label = document.createElement('label');
+				label.innerText = v.label;
+				$formGroup.append(label);
                 if(v.required == true){$formGroup.append(requiredMsg)}
                 var bools = [];
                 var groupRequired = false;
 				if(v.required == true){
                     groupRequired = true;
-                }
-                $.each(v, function(prop, val) {
-                    if(typeof val == 'boolean') {
-                        if(val) {
-                            bools.push(prop);
-                        }
-                        delete v[prop];
-                    }
-                });
-                $.each(v.options, function(ind,opt) {
-                    var $formCheck = $('<div>',{
-                        class: 'form-check ' + v.class
-                    });
-                    var id = v.id + '-' + ind;
-                    var $option = $('<input>',{
-                        class: 'form-check-input formfield ' + v.class,
-                        type: 'radio',
-                        id: id,
-                        name: v.id
-                    });
-                    $.each(bools, function(ind, prop) {
-                        $option.prop(prop,true);
-                    });
-                    if(v.value) {
-                        //if v.value is an object, check multiple boxes
-                        if(typeof v.value === 'object') {
-                            $.each(v.value, function(index,value) {
-                                if(value == opt) {
-                                    $option.prop('checked',true);
+				}
+				for(prop in v) {
+					if(typeof v[prop] == 'boolean') {
+						if(v[prop]) {
+							bools.push(prop);
+						}
+						delete v[prop];
+					}
+				}
+				let ind = 0;
+				for(prop in v.options) {
+					var $formCheck = document.createElement('div');
+					$formCheck.classList.add('form-check',v.class);
+					let id = `${v.id}-${ind}`;
+					let $option = document.createElement('input');
+					$option.classList.add('form-check',v.class);
+					$option.type = 'radio';
+					$option.id = id;
+					$option.name = v.id;
+					bools.forEach(item => {
+						$option[item] = true;
+					});
+					if(v.value) {
+						// if v.value is an object, check multiple boxes
+						if(typeof v.value == 'object') {
+							for(subProp in v.value) {
+								if(v.value[subProp] == v.options[prop]) {
+                                    $option.checked = true;
                                 }
-                            });
-                        }
-                        //otherse assume its a string (single value)
-                        else {
-                            if(v.value == opt) {
-                                $option.prop('checked',true);
-                            }
-                        }
-                    }
-                    $option[0].dataset.id = v.id;
-                    $option[0].dataset.type = 'radio';
-                    $option[0].dataset.value = opt;
-                    $formCheck.append($option);
-                    var $label = $('<label>',{
-                        class: 'form-check-label',
-                        for: id,
-                        text: ind
-                    });
-                    $formCheck.append($label);
-                    $formGroup.append($formCheck);
-                    if(groupRequired == true){
-                        groupRequired == false;
-                        $formGroup.append(requiredMsg);
-                    }
-                });
-                $formGroup[0].id = 'parent-' + v.id;
+							}
+						}
+						//otherwise assume its a string (single value)
+						else {
+							if(v.value == v.options[prop]) {
+								$option.checked = true;
+							}
+						}
+					}
+					$option.dataset.id = v.id;
+					$option.dataset.type = 'radio';
+					$option.dataset.value = v.options[prop];
+					$formCheck.append($option);
+					var $label = document.createElement('label');
+					$label.classList.add('form-check-label');
+					$label.setAttribute('for',id);
+					$label.innerText = ind;
+					$formCheck.append($label);
+					$formGroup.append($formCheck);
+					ind++
+				}
+				if(groupRequired == true){
+                    groupRequired == false;
+                    $formGroup.append(requiredMsg);
+                }
+				$formGroup.id = `parent-${v.id}`;
                 $form.append($formGroup);
             } else if(v.type == 'textarea') {
                 // Build text areas
